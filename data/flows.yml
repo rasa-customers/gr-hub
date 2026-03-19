@@ -1,0 +1,63 @@
+# Flows
+flows:
+  driver_order_issue:
+    name: driver order issue
+    description: >
+      A delivery driver is on a voice call with the food delivery platform about a problem with their active pickup or delivery - wrong item count, missing items,
+      or items that do not match what the restaurant gave them. They need verification,
+      details of what is wrong, which item is missing, whether they already left the
+      restaurant, and next steps such as partial delivery and customer refund or credit.
+    steps:
+      # In production, set active order context from dispatch/session before this flow. (e.g. session start)
+      - set_slots:
+          - active_order_id: "A7842"
+          - active_restaurant: "Tony's Pizza"
+          - missing_item_confirmation_done: "false"
+      - action: utter_active_order_context
+      - collect: driver_id
+        description: >
+          The driver's numeric or alphanumeric driver ID spoken or entered for identity
+          verification on this support call.
+        silence_timeout: 12
+        dtmf:
+          length: 5
+          allow_audio_input: true
+      - action: utter_driver_verified
+      - collect: order_issue_description
+        description: >
+          Short spoken summary of what is wrong with the order (e.g. wrong number of items, missing items, wrong items in the bag).
+        silence_timeout: 18
+      - action: utter_understood_issue
+      - collect: missing_item
+        description: >
+          The exact missing or incorrect food item as the driver names it (e.g. "supreme pizza", "cheese pizza"). If the driver corrects themselves, use the latest item they confirm.
+        silence_timeout: 15
+      - noop: true
+        next:
+          - if: slots.missing_item_confirmation_done = "true"
+            then: ask_if_left_restaurant
+          - else: utter_missing_confirm_once
+      - id: utter_missing_confirm_once
+        action: utter_confirm_missing_item
+        next: set_missing_item_confirm_done
+      - id: set_missing_item_confirm_done
+        set_slots:
+          - missing_item_confirmation_done: "true"
+      - id: ask_if_left_restaurant
+        collect: has_left_restaurant
+        description: >
+          Whether the driver has already left the restaurant: true if yes, false if still at or returning to the restaurant.
+        silence_timeout: 12
+        next:
+          - if: slots.has_left_restaurant = "true"
+            then: left_restaurant_path
+          - else: still_at_restaurant_path
+      - id: left_restaurant_path
+        action: utter_partial_delivery_and_refund
+        next: END
+      - id: still_at_restaurant_path
+        action: utter_return_to_restaurant_for_item
+        next: wait_for_missing_item_path
+      - id: wait_for_missing_item_path
+        action: utter_wait_for_missing_item
+        next: END

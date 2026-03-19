@@ -1,0 +1,11 @@
+# Overwrite the default domain patterns
+version: "3.1"
+
+responses:
+  utter_welcome:
+    - text: "Thanks for calling driver support. How can I help with your order?"
+
+  utter_ask_continue_conversation:
+    - text: "Is there anything else I can help you with?"
+      metadata:
+        rephrase: False

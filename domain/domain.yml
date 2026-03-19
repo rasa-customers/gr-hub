@@ -1,0 +1,85 @@
+# Default domain file
+# * slots, responses, action and intent names go here
+version: "3.1"
+
+slots:
+  active_order_id:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_llm
+  active_restaurant:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_llm
+  driver_id:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_llm
+  order_issue_description:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_llm
+  missing_item:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_llm
+  # Internal: set in flow so utter_confirm_missing_item runs at most once per flow run.
+  missing_item_confirmation_done:
+    type: categorical
+    influence_conversation: false
+    values:
+      - "true"
+      - "false"
+    initial_value: "false"
+    mappings:
+      - type: from_llm
+  has_left_restaurant:
+    type: categorical
+    influence_conversation: true
+    values:
+      - "true"
+      - "false"
+    mappings:
+      - type: from_llm
+
+responses:
+  utter_active_order_context:
+    - text: "I see you're on order number {active_order_id} from {active_restaurant}."
+
+  utter_ask_driver_id:
+    - text: "Can you confirm your driver ID?"
+
+  utter_driver_verified:
+    - text: "Thanks, you're verified."
+
+  utter_ask_order_issue_description:
+    - text: "What's the issue with the order?"
+
+  utter_understood_issue:
+    - text: "Understood."
+
+  utter_ask_missing_item:
+    - text: "Please tell me the exact missing items."
+
+  utter_confirm_missing_item:
+    - text: "Thank you. I have the missing item is a {missing_item}."
+
+  utter_ask_has_left_restaurant:
+    - text: "Have you already left the restaurant?"
+
+  utter_partial_delivery_and_refund:
+    - text: >
+        Thanks for confirming. Please go ahead and deliver the items you have. I'll notify the customer and issue a refund or credit for the missing item.
+
+  utter_return_to_restaurant_for_item:
+    - text: "Please stay at the restaurant. I'm confirming the missing item now."
+  utter_wait_for_missing_item:
+    - text: "The missing pizza is being prepared. It'll be ready in about 5 minutes. Please wait and collect the full order."
+
+  utter_anything_else_help:
+    - text: "Is there anything else I can help you with?"
